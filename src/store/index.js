@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, createContext } from 'react'
 import { makeAutoObservable } from 'mobx'
 
 
@@ -8,5 +8,7 @@ const createStore = () => ({
 })
 
 const stores = createStore()
+const StoresContext = createContext(stores)
+const useStore = useContext(StoresContext)
 
-const useStore = useContext(stores)
+// export function 
