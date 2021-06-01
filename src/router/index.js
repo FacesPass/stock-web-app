@@ -22,7 +22,7 @@ export const routes = [
     component: Trade
   },
   {
-    path: 'property',
+    path: '/property',
     exact: true,
     component: Property
   },
