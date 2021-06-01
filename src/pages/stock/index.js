@@ -1,5 +1,6 @@
-import React, { memo } from 'react'
+import React, { memo, useState } from 'react'
 import { Button, Table } from 'antd'
+import AddStockModal from './child-cpns/add-stock-modal'
 
 import './index.less'
 import trade from '@/assets/img/trade.png'
@@ -51,14 +52,38 @@ const columns = [
 ];
 
 export default memo(function Stock(props) {
+  const [visible, setVisible] = useState(false)
+
+  function handleVisible() {
+    setVisible(true)
+  }
+
+  function handleCancel() {
+    setVisible(false)
+  }
+
+  function handleOk() {
+
+  }
+
   return (
     <div className='stock'>
       <div className='header'>
         <img src={trade} className='trade-img'></img>
         <h2 className='desc'>开始交易</h2>
-        <Button type="primary" className='add-stock'>添加股票</Button>
+        <Button
+          type="primary"
+          className='add-stock'
+          onClick={handleVisible}
+        >添加股票</Button>
       </div>
       <Table dataSource={dataSource} columns={columns} />
+
+      <AddStockModal
+        visible={visible}
+        handleCancel={handleCancel}
+        handleOk={handleOk}
+      />
     </div>
   )
 })
