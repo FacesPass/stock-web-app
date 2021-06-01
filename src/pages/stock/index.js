@@ -69,7 +69,7 @@ export default memo(function Stock(props) {
   return (
     <div className='stock'>
       <div className='header'>
-        <img src={trade} className='trade-img'></img>
+        <img src={trade} className='trade-img' alt=''></img>
         <h2 className='desc'>开始交易</h2>
         <Button
           type="primary"
