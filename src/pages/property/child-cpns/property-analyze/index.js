@@ -1,14 +1,18 @@
 import React, { memo, useEffect, useRef } from 'react'
 import * as echarts from 'echarts'
-import { GridComponent } from 'echarts/components';
-import { LineChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
+import { GridComponent } from 'echarts/components'
+import { LineChart } from 'echarts/charts'
+import { CanvasRenderer } from 'echarts/renderers'
 
 import './index.less'
-import { Button } from 'antd';
+import { Button } from 'antd'
 echarts.use([GridComponent, LineChart, CanvasRenderer])
 
 export default memo(function PropertyAnalyze() {
+  const data = {
+    x: ['2021/05/30', '2021/05/31', '2021/06/01', '2021/06/02'],
+    y: [50, -15, 2.5, 10]
+  }
 
   useEffect(() => {
     const chartDom = document.getElementById('line-chart')
@@ -17,22 +21,25 @@ export default memo(function PropertyAnalyze() {
       xAxis: {
         name: '日期',
         type: 'category',
-        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        data: data.x
       },
       yAxis: {
-        name: '累计收益率',
-        type: 'value'
+        name: '累计收益率(%)',
+        type: 'value',
+        data: data.y
       },
-      series: [{
-        data: [150, 230, 224, 218, 135, 147, 260],
-        type: 'line'
-      }],
+      series: [
+        {
+          name: '累计收益率(%)：',
+          data: data.y,
+          type: 'line'
+        }],
       tooltip: {
         trigger: 'axis',
         axisPointer: {
           type: 'cross',
           label: {
-            backgroundColor: '#6a7985'
+            backgroundColor: '#333'
           }
         }
       }
