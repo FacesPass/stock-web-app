@@ -8,7 +8,7 @@ export default memo(function Header() {
     <div className='header'>
       <div className='left'></div>
       <div className='center'>
-        <NavLink to='/home' className='link' activeClassName='active'>股票</NavLink>
+        <NavLink to='/stock' className='link' activeClassName='active'>股票</NavLink>
         <NavLink to='/trade' className='link' activeClassName='active'>交易</NavLink>
         <NavLink to='/property' className='link' activeClassName='active'>资产</NavLink>
       </div>
