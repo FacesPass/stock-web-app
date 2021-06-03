@@ -43,6 +43,9 @@ export default memo(function Trade() {
             <Item label='股票现有情况'>
               <div>1000元</div>
             </Item>
+            <Item>
+              <Button shape='round'>修改</Button>
+            </Item>
           </Form>
         </div>
       </div>

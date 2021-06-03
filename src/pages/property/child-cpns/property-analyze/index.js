@@ -1,22 +1,23 @@
-import React, { memo, useEffect, useRef } from 'react'
+import React, { memo, useEffect } from 'react'
 import * as echarts from 'echarts'
+import { Button } from 'antd'
 import { GridComponent } from 'echarts/components'
 import { LineChart } from 'echarts/charts'
 import { CanvasRenderer } from 'echarts/renderers'
+import { getRandom } from '@/utils/random'
 
 import './index.less'
-import { Button } from 'antd'
+
 echarts.use([GridComponent, LineChart, CanvasRenderer])
 
 export default memo(function PropertyAnalyze() {
-  const data = {
-    x: ['2021/05/30', '2021/05/31', '2021/06/01', '2021/06/02'],
-    y: [50, -15, 2.5, 10]
-  }
-
   useEffect(() => {
     const chartDom = document.getElementById('line-chart')
     const myChart = echarts.init(chartDom)
+    const data = {
+      x: ['2021/05/30', '2021/05/31', '2021/06/01', '2021/06/02'],
+      y: [50, -15, 2.5, 10]
+    }
     myChart.setOption({
       xAxis: {
         name: '日期',
@@ -46,13 +47,17 @@ export default memo(function PropertyAnalyze() {
     })
   }, [])
 
+  function handleDate(date) {
+
+  }
+
   return (
     <div className='property-analyze'>
       <div className='controler'>
-        <Button>7天</Button>
-        <Button>30天</Button>
-        <Button>3个月</Button>
-        <Button>6个月</Button>
+        <Button onClick={() => handleDate(7)}>7天</Button>
+        <Button onClick={() => handleDate(30)}>30天</Button>
+        <Button onClick={() => handleDate(90)}>3个月</Button>
+        <Button onClick={() => handleDate(180)}>6个月</Button>
       </div>
       <div id='line-chart'></div>
     </div>
