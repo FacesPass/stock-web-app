@@ -4,7 +4,6 @@ import { Button } from 'antd'
 import { GridComponent } from 'echarts/components'
 import { LineChart } from 'echarts/charts'
 import { CanvasRenderer } from 'echarts/renderers'
-import { getRandom } from '@/utils/random'
 
 import './index.less'
 

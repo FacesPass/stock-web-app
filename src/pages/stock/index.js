@@ -1,58 +1,59 @@
-import React, { memo, useState } from 'react'
-import { Button, Table } from 'antd'
-import AddStockModal from './child-cpns/add-stock-modal'
+import React, { useState } from 'react'
+import { Button, Table, Modal, Form, Input, message } from 'antd'
+import { addStock } from '@/service/api'
+import { useUserStore, useStockStore } from '../../store'
 
 import './index.less'
 import trade from '@/assets/img/trade.png'
+import { observer } from 'mobx-react-lite'
 
-const dataSource = [
-  {
-    key: '1',
-    name: '股票1',
-    scale: '162.79',
-    hold: 60,
-    latestPrice: 32,
-    today: '5%',
-  }, {
-    key: '2',
-    name: '股票2',
-    scale: '162.79',
-    hold: 60,
-    latestPrice: 32,
-    today: '5%',
-  }
-];
+const { Item } = Form
+
 
 const columns = [
   {
     title: '名称',
-    dataIndex: 'name',
-    key: 'name'
+    dataIndex: 'type',
+    key: 'type'
   },
   {
     title: '规模',
-    dataIndex: 'scale',
-    key: 'scale'
+    dataIndex: 'volume',
+    key: 'volume'
   },
   {
     title: '持有率',
-    dataIndex: 'hold',
-    key: 'hold'
+    dataIndex: 'holdingRate',
+    key: 'holdingRate',
+    render: (val, record) => {
+      return (
+        <div>{val * 100}%</div>
+      )
+    }
   },
   {
     title: '最新价',
-    dataIndex: 'latestPrice',
-    key: 'latestPrice'
+    dataIndex: 'price',
+    key: 'price'
   },
   {
     title: '今日涨跌',
-    dataIndex: 'today',
-    key: 'today'
+    dataIndex: 'upsAnddowns',
+    key: 'upsAnddowns',
+    render: (val, record) => {
+      return (
+        <div>{val * 100}%</div>
+      )
+    }
   },
 ];
 
-export default memo(function Stock(props) {
+export default observer(function Stock(props) {
   const [visible, setVisible] = useState(false)
+  const [stockId, setStockId] = useState('')
+
+  const { userId } = useUserStore()
+  const { getStockList, setStockList } = useStockStore()
 
   function handleVisible() {
     setVisible(true)
@@ -62,8 +63,19 @@ export default memo(function Stock(props) {
     setVisible(false)
   }
 
-  function handleOk() {
+  function handleStockIdChange(e) {
+    setStockId(e.target.value)
+  }
 
+  async function handleOk() {
+    const res = await addStock(userId, stockId)
+    res.data.forEach((item, index) => {
+      item.key = index
+    })
+    setStockList(res.data)
+    setStockId('')
+    setVisible(false)
+    message.success('添加股票成功')
   }
 
   return (
@@ -77,13 +89,23 @@ export default memo(function Stock(props) {
           onClick={handleVisible}
         >添加股票</Button>
       </div>
-      <Table dataSource={dataSource} columns={columns} />
+      <Table dataSource={getStockList()} columns={columns} />
 
-      <AddStockModal
+
+      <Modal
         visible={visible}
-        handleCancel={handleCancel}
-        handleOk={handleOk}
-      />
+        title='添加股票'
+        okText='确定'
+        cancelText='关闭'
+        onCancel={handleCancel}
+        onOk={handleOk}
+      >
+        <Form>
+          <Item label='输入股票ID'>
+            <Input value={stockId} onChange={e => handleStockIdChange(e)} />
+          </Item>
+        </Form>
+      </Modal>
     </div>
   )
 })

@@ -1,8 +1,10 @@
 import axios from 'axios'
 import { message } from 'antd'
+import { env } from './config'
 
 const request = axios.create({
-  timeout: 10000,
+  baseURL: env,
+  timeout: 8000,
   timeoutErrorMessage: '请求接口超时'
 })
 
