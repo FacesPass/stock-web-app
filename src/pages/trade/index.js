@@ -1,22 +1,84 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Input, Form, message } from 'antd'
 import { fetchStock, editStock, sellStock, buyStock } from '../../service/api'
 import { useTradeStore, useUserStore } from '../../store'
 import { observer } from 'mobx-react-lite'
-// import { createForm, onFieldInputValueChange } from '@formily/core'
-// import { createSchemaField, FormConsumer } from '@formily/react'
-// import { Form as FormilyForm, FormItem, NumberPicker } from '@formily/antd'
+import { createForm, onFieldInputValueChange, onFormSubmit } from '@formily/core'
+import { createSchemaField, FormConsumer, useForm, FormProvider } from '@formily/react'
+import { Form as FormilyForm, FormItem, NumberPicker } from '@formily/antd'
 
 import './index.less'
 
 const { Item } = Form
 
 export default observer(function Trade() {
-  const [isSearch, setIsSearch] = useState(false)
+  const [isSearch, setIsSearch] = useState(true)
   const [stockId, setStockId] = useState()
-  const [leftPrice, setLeftPrice] = useState()
-  const [leftCount, setLeftCount] = useState()
-  const [leftTotal, setLeftTotal] = useState()
+
+  let action
+
+  const form = createForm({
+    effects() {
+      onFieldInputValueChange('price', (field) => {
+        form.setFieldState('total', (state) => {
+          const count = form.values.count
+          if (count === undefined) return
+          state.value = field.value * count
+        })
+      })
+      onFieldInputValueChange('count', (field) => {
+        form.setFieldState('total', (state) => {
+          const price = form.values.price
+          if (price === undefined) return
+          state.value = field.value * price
+        })
+      })
+      onFieldInputValueChange('total', (field) => {
+        if (field.value === undefined) return
+        form.setFieldState('count', (state) => {
+          const price = form.values.price
+          if (!price) return
+          state.value = field.value / price
+        })
+        form.setFieldState('price', (state) => {
+          const count = form.values.count
+          if (!count) return
+          state.value = field.value / count
+        })
+      })
+      onFormSubmit(async (form) => {
+        console.log(form.values)
+        console.log(action)
+        if (!form.values.price || !form.values.count) {
+          message.warning('请填写单价和数量')
+          return
+        }
+        const { price, count } = form.values
+        if (action === 'buy') {
+          const res = await buyStock(stockId, userId, price, count)
+          console.log(res)
+          if (res.status === 'SUCCESS') {
+            message.success('买入成功')
+          }
+        }
+
+        if (action === 'sell') {
+          const res = await sellStock(stockId, userId, price, count)
+          console.log(res)
+          if (res.status === 'SUCCESS') {
+            message.success('卖出成功')
+          }
+        }
+      })
+    },
+  })
+
+  const SchemaField = createSchemaField({
+    components: {
+      FormItem,
+      NumberPicker,
+    },
+  })
 
   const { userId } = useUserStore()
   const { setTradeData, tradeData } = useTradeStore()
@@ -58,31 +120,14 @@ export default observer(function Trade() {
     }
   }
 
-  function handleLeftPrice(e) {
-    setLeftPrice(e.target.value)
-  }
-
-  function handleLeftCount(e) {
-    setLeftCount(e.target.value)
-  }
-
-  function handleLeftTotal(e) {
-  }
-
   async function handleBuy() {
-    const res = await buyStock(stockId, userId, leftPrice, leftCount)
-    console.log(res)
-    if (res.status === 'SUCCESS') {
-      message.success('买入成功')
-    }
+    action = 'buy'
+    form.submit()
   }
 
   async function handleSell() {
-    const res = await sellStock(stockId, userId, leftPrice, leftCount)
-    console.log(res)
-    if (res.status === 'SUCCESS') {
-      message.success('卖出成功')
-    }
+    action = 'sell'
+    form.submit()
   }
 
   return (
@@ -102,21 +147,28 @@ export default observer(function Trade() {
           <div className='panal'>
             <div className='left'>
               <h2 className='title'>限价委托</h2>
-              <Form>
-                <Item label='价格'>
-                  <Input value={leftPrice} onChange={e => handleLeftPrice(e)} className='ipt' />
-                </Item>
-                <Item label='数量'>
-                  <Input value={leftCount} onChange={e => handleLeftCount(e)} className='ipt' />
-                </Item>
-                <Item label='金额'>
-                  <Input
-                    value={leftTotal}
-                    onChange={e => handleLeftTotal(e)}
-                    className='ipt'
+              <FormilyForm form={form}>
+                <SchemaField>
+                  <SchemaField.Number
+                    name="price"
+                    title="单价"
+                    x-component="NumberPicker"
+                    x-decorator="FormItem"
                   />
-                </Item>
-              </Form>
+                  <SchemaField.Number
+                    name="count"
+                    title="数量"
+                    x-component="NumberPicker"
+                    x-decorator="FormItem"
+                  />
+                  <SchemaField.Number
+                    name="total"
+                    title="总价"
+                    x-component="NumberPicker"
+                    x-decorator="FormItem"
+                  />
+                </SchemaField>
+              </FormilyForm>
             </div>
             <div className='right'>
               <h2 className='title'>股票持有情况-{tradeData.type}</h2>
@@ -135,9 +187,6 @@ export default observer(function Trade() {
                     onChange={e => handleCountChange(e)}
                   />
                 </Item>
-                {/* <Item label='金额'>
-                  <Input className='ipt' />
-                </Item> */}
                 <Item label='股票现有情况'>
                   <div>{tradeData?.total}</div>
                 </Item>
