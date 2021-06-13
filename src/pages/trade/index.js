@@ -4,16 +4,21 @@ import { fetchStock, editStock, sellStock, buyStock } from '../../service/api'
 import { useTradeStore, useUserStore } from '../../store'
 import { observer } from 'mobx-react-lite'
 import { createForm, onFieldInputValueChange, onFormSubmit } from '@formily/core'
-import { createSchemaField, FormConsumer, useForm, FormProvider } from '@formily/react'
+import { createSchemaField } from '@formily/react'
 import { Form as FormilyForm, FormItem, NumberPicker } from '@formily/antd'
+import { fetchMoney } from '../../service/api'
+import { usePropertyStore } from '../../store'
 
 import './index.less'
 
 const { Item } = Form
 
 export default observer(function Trade() {
-  const [isSearch, setIsSearch] = useState(true)
+  const [isSearch, setIsSearch] = useState(false)
   const [stockId, setStockId] = useState()
+  const { property, setProperty } = usePropertyStore()
+  const { userId } = useUserStore()
+  const { setTradeData, tradeData } = useTradeStore()
 
   let action
 
@@ -50,6 +55,7 @@ export default observer(function Trade() {
         console.log(form.values)
         console.log(action)
         if (!form.values.price || !form.values.count) {
+          message.destroy()
           message.warning('请填写单价和数量')
           return
         }
@@ -58,7 +64,9 @@ export default observer(function Trade() {
           const res = await buyStock(stockId, userId, price, count)
           console.log(res)
           if (res.status === 'SUCCESS') {
-            message.success('买入成功')
+            message.info(res.message)
+            fetchMondyInfo()
+            handleSearch()
           }
         }
 
@@ -66,7 +74,9 @@ export default observer(function Trade() {
           const res = await sellStock(stockId, userId, price, count)
           console.log(res)
           if (res.status === 'SUCCESS') {
-            message.success('卖出成功')
+            message.info(res.message)
+            fetchMondyInfo()
+            handleSearch()
           }
         }
       })
@@ -80,8 +90,17 @@ export default observer(function Trade() {
     },
   })
 
-  const { userId } = useUserStore()
-  const { setTradeData, tradeData } = useTradeStore()
+  useEffect(() => {
+    fetchMondyInfo()
+  }, [])
+
+  async function fetchMondyInfo() {
+    const res = await fetchMoney(userId)
+    console.log(res)
+    if (res.status === 'SUCCESS') {
+      setProperty(res.data)
+    }
+  }
 
   async function handleSearch() {
     if (!stockId) {
@@ -117,6 +136,7 @@ export default observer(function Trade() {
     const res = await editStock(params)
     if (res.status === "SUCCESS") {
       message.success('修改成功')
+      handleSearch()
     }
   }
 
@@ -171,7 +191,7 @@ export default observer(function Trade() {
               </FormilyForm>
             </div>
             <div className='right'>
-              <h2 className='title'>股票持有情况-{tradeData.type}</h2>
+              <h2 className='title'>{tradeData.stockName}-股票持有情况</h2>
               <Form>
                 <Item label='价格'>
                   <Input
@@ -189,6 +209,9 @@ export default observer(function Trade() {
                 </Item>
                 <Item label='股票现有情况'>
                   <div>{tradeData?.total}</div>
+                </Item>
+                <Item label='目前总资产'>
+                  <div>{property?.totalAccount} 人民币/美元</div>
                 </Item>
                 <Item>
                   <Button shape='round' onClick={handleEdit}>修改</Button>

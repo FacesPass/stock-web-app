@@ -9,8 +9,8 @@ import './index.less'
 const columns = [
   {
     title: '名称',
-    dataIndex: 'type',
-    key: 'type'
+    dataIndex: 'stockName',
+    key: 'stockName'
   },
   {
     title: '单价',
